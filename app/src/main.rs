@@ -70,9 +70,7 @@ impl ExternalFunctions {
     pub fn call(&self, function: &str, arguments: &[f64]) -> Result<f64, InvocationError> {
         self.functions
             .get(function)
-            .ok_or_else(|| InvocationError::Other {
-                msg: format!("\"{}\" not found", function),
-            })?
+            .ok_or_else(|| format!("\"{}\" not found", function))?
             .call(arguments)
     }
 
