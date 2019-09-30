@@ -28,7 +28,7 @@ impl<S: ToString> From<S> for InvocationError {
 pub struct PluginDeclaration {
     pub rustc_version: &'static str,
     pub core_version: &'static str,
-    pub register: extern "C" fn(&mut dyn PluginRegistrar),
+    pub register: unsafe extern "C" fn(&mut dyn PluginRegistrar),
 }
 
 pub trait PluginRegistrar {

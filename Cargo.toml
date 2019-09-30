@@ -1,2 +1,2 @@
 [workspace]
-members = ["core", "random"]
+members = ["core", "random", "app"]
