@@ -1,9 +1,58 @@
 use libloading::Library;
 use plugins_core::{Function, InvocationError, PluginDeclaration};
-use std::{collections::HashMap, ffi::OsStr, io, rc::Rc};
+use std::{collections::HashMap, env, ffi::OsStr, io, path::PathBuf, rc::Rc};
 
 fn main() {
-    println!("Hello, world!");
+    // parse arguments
+    let args = env::args().skip(1);
+    let args = Args::parse(args).expect("Usage: app <plugin-path> <function> <args>...");
+
+    // create our functions table and load the plugin
+    let mut functions = ExternalFunctions::new();
+    functions
+        .load(&args.plugin_library)
+        .expect("Function loading failed");
+
+    // then call the function
+    let result = functions
+        .call(&args.function, &args.arguments)
+        .expect("Invocation failed");
+
+    // print out the result
+    println!(
+        "{}({}) = {}",
+        args.function,
+        args.arguments
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(", "),
+        result
+    );
+}
+
+struct Args {
+    plugin_library: PathBuf,
+    function: String,
+    arguments: Vec<f64>,
+}
+
+impl Args {
+    fn parse(mut args: impl Iterator<Item = String>) -> Option<Args> {
+        let plugin_library = PathBuf::from(args.next()?);
+        let function = args.next()?;
+        let mut arguments = Vec::new();
+
+        for arg in args {
+            arguments.push(arg.parse().ok()?);
+        }
+
+        Some(Args {
+            plugin_library,
+            function,
+            arguments,
+        })
+    }
 }
 
 /// A map of all externally provided functions.
@@ -18,11 +67,31 @@ impl ExternalFunctions {
         ExternalFunctions::default()
     }
 
+    pub fn call(&self, function: &str, arguments: &[f64]) -> Result<f64, InvocationError> {
+        self.functions
+            .get(function)
+            .ok_or_else(|| InvocationError::Other {
+                msg: format!("\"{}\" not found", function),
+            })?
+            .call(arguments)
+    }
+
     pub fn load<P: AsRef<OsStr>>(&mut self, library_path: P) -> io::Result<()> {
+        // load the library into memory
         let library = Rc::new(Library::new(library_path)?);
 
-        let decl = unsafe { library.get::<PluginDeclaration>(b"plugin_declaration\0")? };
+        // get a pointer to the plugin_declaration symbol.
+        //
+        // This is safe because plugin_declaration was created using our
+        // export_plugin!() macro. If an author creates a static with the same
+        // name but different type they've violated the plugin interface
+        let decl = unsafe {
+            library
+                .get::<*mut PluginDeclaration>(b"plugin_declaration\0")?
+                .read()
+        };
 
+        // version checks to prevent accidental ABI incompatibilities
         if decl.rustc_version != plugins_core::RUSTC_VERSION
             || decl.core_version != plugins_core::CORE_VERSION
         {
@@ -31,11 +100,14 @@ impl ExternalFunctions {
 
         let mut registrar = PluginRegistrar::new(Rc::clone(&library));
 
+        // same safety justification as above
         unsafe {
             (decl.register)(&mut registrar);
         }
 
+        // add all loaded plugins to the functions map
         self.functions.extend(registrar.functions);
+        // and make sure ExternalFunctions keeps a reference to the library
         self.libraries.push(library);
 
         Ok(())
