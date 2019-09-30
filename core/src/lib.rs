@@ -2,7 +2,7 @@ pub static CORE_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub static RUSTC_VERSION: &str = env!("RUSTC_VERSION");
 
 pub trait Function {
-    fn call(&self, args: &[f64]) -> Result<f64, InvocationError<'_>>;
+    fn call(&self, args: &[f64]) -> Result<f64, InvocationError>;
 
     /// Help text that may be used to display information about this function.
     fn help(&self) -> Option<&str> {
@@ -10,10 +10,18 @@ pub trait Function {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum InvocationError<'a> {
+#[derive(Debug, Clone, PartialEq)]
+pub enum InvocationError {
     InvalidArgumentCount { expected: usize, found: usize },
-    Other { msg: &'a str },
+    Other { msg: String },
+}
+
+impl<S: ToString> From<S> for InvocationError {
+    fn from(other: S) -> InvocationError {
+        InvocationError::Other {
+            msg: other.to_string(),
+        }
+    }
 }
 
 #[derive(Copy, Clone)]

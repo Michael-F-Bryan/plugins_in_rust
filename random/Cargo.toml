@@ -1,0 +1,12 @@
+[package]
+name = "plugins_random"
+version = "0.1.0"
+authors = ["Michael Bryan <michaelfbryan@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+plugins_core = { path = "../core" }
+reqwest = "0.9.20"
