@@ -1,6 +1,12 @@
 use libloading::Library;
 use plugins_core::{Function, InvocationError, PluginDeclaration};
-use std::{collections::HashMap, env, ffi::OsStr, io, path::PathBuf, rc::Rc};
+use std::{
+    alloc::System, collections::HashMap, env, ffi::OsStr, io, path::PathBuf,
+    rc::Rc,
+};
+
+#[global_allocator]
+static ALLOCATOR: System = System;
 
 fn main() {
     // parse arguments
