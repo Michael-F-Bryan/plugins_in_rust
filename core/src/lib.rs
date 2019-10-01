@@ -5,9 +5,7 @@ pub trait Function {
     fn call(&self, args: &[f64]) -> Result<f64, InvocationError>;
 
     /// Help text that may be used to display information about this function.
-    fn help(&self) -> Option<&str> {
-        None
-    }
+    fn help(&self) -> Option<&str> { None }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -40,10 +38,11 @@ macro_rules! export_plugin {
     ($register:expr) => {
         #[doc(hidden)]
         #[no_mangle]
-        pub static plugin_declaration: $crate::PluginDeclaration = $crate::PluginDeclaration {
-            rustc_version: $crate::RUSTC_VERSION,
-            core_version: $crate::CORE_VERSION,
-            register: $register,
-        };
+        pub static plugin_declaration: $crate::PluginDeclaration =
+            $crate::PluginDeclaration {
+                rustc_version: $crate::RUSTC_VERSION,
+                core_version: $crate::CORE_VERSION,
+                register: $register,
+            };
     };
 }

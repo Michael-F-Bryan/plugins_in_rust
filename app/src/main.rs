@@ -11,7 +11,8 @@ static ALLOCATOR: System = System;
 fn main() {
     // parse arguments
     let args = env::args().skip(1);
-    let args = Args::parse(args).expect("Usage: app <plugin-path> <function> <args>...");
+    let args = Args::parse(args)
+        .expect("Usage: app <plugin-path> <function> <args>...");
 
     // create our functions table and load the plugin
     let mut functions = ExternalFunctions::new();
@@ -69,11 +70,13 @@ pub struct ExternalFunctions {
 }
 
 impl ExternalFunctions {
-    pub fn new() -> ExternalFunctions {
-        ExternalFunctions::default()
-    }
+    pub fn new() -> ExternalFunctions { ExternalFunctions::default() }
 
-    pub fn call(&self, function: &str, arguments: &[f64]) -> Result<f64, InvocationError> {
+    pub fn call(
+        &self,
+        function: &str,
+        arguments: &[f64],
+    ) -> Result<f64, InvocationError> {
         self.functions
             .get(function)
             .ok_or_else(|| format!("\"{}\" not found", function))?
@@ -99,7 +102,10 @@ impl ExternalFunctions {
         if decl.rustc_version != plugins_core::RUSTC_VERSION
             || decl.core_version != plugins_core::CORE_VERSION
         {
-            return Err(io::Error::new(io::ErrorKind::Other, "Version mismatch"));
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Version mismatch",
+            ));
         }
 
         let mut registrar = PluginRegistrar::new(Rc::clone(&library));
@@ -154,7 +160,5 @@ impl Function for FunctionProxy {
         self.function.call(args)
     }
 
-    fn help(&self) -> Option<&str> {
-        self.function.help()
-    }
+    fn help(&self) -> Option<&str> { self.function.help() }
 }
