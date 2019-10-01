@@ -88,10 +88,10 @@ impl ExternalFunctions {
 
     /// Load a plugin library and add all contained functions to the internal
     /// function table.
-    /// 
+    ///
     /// # Safety
-    /// 
-    /// A plugin library **must** be implemented using the 
+    ///
+    /// A plugin library **must** be implemented using the
     /// [`plugins_core::plugin_declaration!()`] macro. Trying manually implement
     /// a plugin without going through that macro will result in undefined
     /// behaviour.
