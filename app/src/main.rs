@@ -73,7 +73,9 @@ pub struct ExternalFunctions {
 }
 
 impl ExternalFunctions {
-    pub fn new() -> ExternalFunctions { ExternalFunctions::default() }
+    pub fn new() -> ExternalFunctions {
+        ExternalFunctions::default()
+    }
 
     pub fn call(
         &self,
@@ -104,26 +106,30 @@ impl ExternalFunctions {
 
         let library = match library {
             Ok(library) => library,
-            Err(_) => return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Failed to load library"
-            ))
+            Err(_) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "Failed to load library",
+                ))
+            }
         };
 
         let library = Rc::new(library);
 
         // get a pointer to the plugin_declaration symbol.
-        let symbol = library
-            .get::<*mut PluginDeclaration>(b"plugin_declaration\0");
-            
+        let symbol =
+            library.get::<*mut PluginDeclaration>(b"plugin_declaration\0");
+
         let symbol = match symbol {
             Ok(symbol) => symbol,
-            Err(_) => return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Failed to load plugin_declaration symbol"
-            ))
+            Err(_) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "Failed to load plugin_declaration symbol",
+                ))
+            }
         };
-        
+
         let decl = symbol.read();
 
         // version checks to prevent accidental ABI incompatibilities
@@ -185,5 +191,7 @@ impl Function for FunctionProxy {
         self.function.call(args)
     }
 
-    fn help(&self) -> Option<&str> { self.function.help() }
+    fn help(&self) -> Option<&str> {
+        self.function.help()
+    }
 }

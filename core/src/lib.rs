@@ -5,7 +5,9 @@ pub trait Function {
     fn call(&self, args: &[f64]) -> Result<f64, InvocationError>;
 
     /// Help text that may be used to display information about this function.
-    fn help(&self) -> Option<&str> { None }
+    fn help(&self) -> Option<&str> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
