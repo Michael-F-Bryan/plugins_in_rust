@@ -32,7 +32,7 @@ fn parse_args(args: &[f64]) -> Result<RequestInfo, InvocationError> {
 
 fn fetch(request: RequestInfo) -> Result<f64, InvocationError> {
     let url = request.format();
-    let response_body = reqwest::get(&url)?.text()?;
+    let response_body = reqwest::blocking::get(&url)?.text()?;
     response_body.trim().parse().map_err(Into::into)
 }
 
