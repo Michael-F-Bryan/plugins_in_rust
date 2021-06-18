@@ -2,6 +2,7 @@ use plugins_core::{Function, InvocationError, PluginRegistrar};
 
 plugins_core::export_plugin!(register);
 
+#[allow(improper_ctypes_definitions)]
 extern "C" fn register(registrar: &mut dyn PluginRegistrar) {
     registrar.register_function("random", Box::new(Random));
 }
