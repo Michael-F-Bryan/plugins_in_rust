@@ -100,12 +100,31 @@ impl ExternalFunctions {
         library_path: P,
     ) -> io::Result<()> {
         // load the library into memory
-        let library = Rc::new(Library::new(library_path)?);
+        let library = Library::new(library_path);
+
+        let library = match library {
+            Ok(library) => library,
+            Err(_) => return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Failed to load library"
+            ))
+        };
+
+        let library = Rc::new(library);
 
         // get a pointer to the plugin_declaration symbol.
-        let decl = library
-            .get::<*mut PluginDeclaration>(b"plugin_declaration\0")?
-            .read();
+        let symbol = library
+            .get::<*mut PluginDeclaration>(b"plugin_declaration\0");
+            
+        let symbol = match symbol {
+            Ok(symbol) => symbol,
+            Err(_) => return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Failed to load plugin_declaration symbol"
+            ))
+        };
+        
+        let decl = symbol.read();
 
         // version checks to prevent accidental ABI incompatibilities
         if decl.rustc_version != plugins_core::RUSTC_VERSION
