@@ -2,6 +2,7 @@ use plugins_core::{Function, InvocationError, PluginRegistrar};
 
 plugins_core::export_plugin!(register);
 
+#[allow(improper_ctypes_definitions)]
 extern "C" fn register(registrar: &mut dyn PluginRegistrar) {
     registrar.register_function("random", Box::new(Random));
 }
@@ -32,7 +33,7 @@ fn parse_args(args: &[f64]) -> Result<RequestInfo, InvocationError> {
 
 fn fetch(request: RequestInfo) -> Result<f64, InvocationError> {
     let url = request.format();
-    let response_body = reqwest::get(&url)?.text()?;
+    let response_body = reqwest::blocking::get(&url)?.text()?;
     response_body.trim().parse().map_err(Into::into)
 }
 
